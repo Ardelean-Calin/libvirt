@@ -27,10 +27,10 @@ echo "Installing dependencies..."
 
 case "$OS" in
 "arch")
-	yes | pacman -S qemu libvirt edk2-ovmf virt-manager dnsmasq ebtables swtpm
+	yes | pacman -Syy qemu libvirt edk2-ovmf virt-manager dnsmasq ebtables swtpm
 	;;
 "pop" | "ubuntu" | "debian")
-	apt install qemu-kvm qemu-utils libvirt-daemon-system libvirt-clients bridge-utils virt-manager ovmf swtpm swtpm-tools
+	apt install -y qemu-kvm qemu-utils libvirt-daemon-system libvirt-clients bridge-utils virt-manager ovmf swtpm swtpm-tools
 	;;
 *)
 	echo "$(tput setaf 2)Unsupported distribution: ${OS}.$(tput sgr0)"
