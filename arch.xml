@@ -1,40 +1,31 @@
 <domain type='kvm'>
-  <name>win11</name>
-  <uuid>563af382-65d5-49b8-bfc1-827c381082b3</uuid>
+  <name>arch</name>
+  <uuid>c27e610e-9279-42b6-a68f-9be54e74ba4b</uuid>
   <metadata>
     <libosinfo:libosinfo xmlns:libosinfo="http://libosinfo.org/xmlns/libvirt/domain/1.0">
-      <libosinfo:os id="http://microsoft.com/win/11"/>
+      <libosinfo:os id="http://archlinux.org/archlinux/rolling"/>
     </libosinfo:libosinfo>
   </metadata>
-  <memory unit='KiB'>16777216</memory>
-  <currentMemory unit='KiB'>16777216</currentMemory>
-  <vcpu placement='static'>16</vcpu>
+  <memory unit='KiB'>8388608</memory>
+  <currentMemory unit='KiB'>8388608</currentMemory>
+  <memoryBacking>
+    <source type='memfd'/>
+    <access mode='shared'/>
+  </memoryBacking>
+  <vcpu placement='static'>1</vcpu>
   <os>
     <type arch='x86_64' machine='pc-q35-6.2'>hvm</type>
-    <loader readonly='yes' secure='yes' type='pflash'>/usr/share/OVMF/OVMF_CODE_4M.secboot.fd</loader>
-    <nvram>/var/lib/libvirt/qemu/nvram/win11_VARS.fd</nvram>
-    <boot dev='hd'/>
   </os>
   <features>
     <acpi/>
     <apic/>
-    <hyperv mode='custom'>
-      <relaxed state='on'/>
-      <vapic state='on'/>
-      <spinlocks state='on' retries='8191'/>
-    </hyperv>
     <vmport state='off'/>
-    <smm state='on'/>
   </features>
-  <cpu mode='host-passthrough' check='none' migratable='on'>
-    <topology sockets='1' dies='1' cores='8' threads='2'/>
-    <feature policy='require' name='topoext'/>
-  </cpu>
-  <clock offset='localtime'>
+  <cpu mode='host-passthrough' check='none' migratable='on'/>
+  <clock offset='utc'>
     <timer name='rtc' tickpolicy='catchup'/>
     <timer name='pit' tickpolicy='delay'/>
     <timer name='hpet' present='no'/>
-    <timer name='hypervclock' present='yes'/>
   </clock>
   <on_poweroff>destroy</on_poweroff>
   <on_reboot>restart</on_reboot>
@@ -46,10 +37,18 @@
   <devices>
     <emulator>/usr/bin/qemu-system-x86_64</emulator>
     <disk type='file' device='disk'>
-      <driver name='qemu' type='qcow2'/>
-      <source file='/home/calin/.libvirt/images/win11.qcow2'/>
+      <driver name='qemu' type='qcow2' discard='unmap'/>
+      <source file='/home/calin/.libvirt/images/arch.qcow2'/>
       <target dev='vda' bus='virtio'/>
+      <boot order='1'/>
       <address type='pci' domain='0x0000' bus='0x04' slot='0x00' function='0x0'/>
+    </disk>
+    <disk type='file' device='cdrom'>
+      <driver name='qemu' type='raw'/>
+      <source file='/home/calin/Downloads/archlinux-2023.07.01-x86_64.iso'/>
+      <target dev='sda' bus='sata'/>
+      <readonly/>
+      <address type='drive' controller='0' bus='0' target='0' unit='0'/>
     </disk>
     <controller type='usb' index='0' model='qemu-xhci' ports='15'>
       <address type='pci' domain='0x0000' bus='0x02' slot='0x00' function='0x0'/>
@@ -131,10 +130,15 @@
     <controller type='virtio-serial' index='0'>
       <address type='pci' domain='0x0000' bus='0x03' slot='0x00' function='0x0'/>
     </controller>
+    <filesystem type='mount' accessmode='mapped'>
+      <source dir='/home/calin/Public'/>
+      <target dir='/hostshare'/>
+      <address type='pci' domain='0x0000' bus='0x07' slot='0x00' function='0x0'/>
+    </filesystem>
     <interface type='network'>
-      <mac address='52:54:00:01:f0:ad'/>
+      <mac address='52:54:00:ff:df:66'/>
       <source network='default'/>
-      <model type='e1000e'/>
+      <model type='virtio'/>
       <address type='pci' domain='0x0000' bus='0x01' slot='0x00' function='0x0'/>
     </interface>
     <serial type='pty'>
@@ -145,48 +149,45 @@
     <console type='pty'>
       <target type='serial' port='0'/>
     </console>
+    <channel type='unix'>
+      <target type='virtio' name='org.qemu.guest_agent.0'/>
+      <address type='virtio-serial' controller='0' bus='0' port='1'/>
+    </channel>
+    <channel type='spicevmc'>
+      <target type='virtio' name='com.redhat.spice.0'/>
+      <address type='virtio-serial' controller='0' bus='0' port='2'/>
+    </channel>
     <input type='tablet' bus='usb'>
-      <address type='usb' bus='0' port='3'/>
+      <address type='usb' bus='0' port='1'/>
     </input>
     <input type='mouse' bus='ps2'/>
     <input type='keyboard' bus='ps2'/>
-    <tpm model='tpm-crb'>
-      <backend type='emulator' version='2.0'/>
-    </tpm>
+    <graphics type='spice' port='-1' autoport='no'>
+      <listen type='address'/>
+      <image compression='off'/>
+      <gl enable='no'/>
+    </graphics>
     <sound model='ich9'>
       <address type='pci' domain='0x0000' bus='0x00' slot='0x1b' function='0x0'/>
     </sound>
-    <audio id='1' type='none'/>
-    <hostdev mode='subsystem' type='pci' managed='yes'>
-      <source>
-        <address domain='0x0000' bus='0x10' slot='0x00' function='0x0'/>
-      </source>
-      <rom file='/usr/share/vgabios/rtx3070-patched.rom'/>
-      <address type='pci' domain='0x0000' bus='0x06' slot='0x00' function='0x0'/>
-    </hostdev>
-    <hostdev mode='subsystem' type='pci' managed='yes'>
-      <source>
-        <address domain='0x0000' bus='0x10' slot='0x00' function='0x1'/>
-      </source>
-      <rom file='/usr/share/vgabios/rtx3070-patched.rom'/>
-      <address type='pci' domain='0x0000' bus='0x07' slot='0x00' function='0x0'/>
-    </hostdev>
-    <hostdev mode='subsystem' type='usb' managed='yes'>
-      <source>
-        <vendor id='0x046d'/>
-        <product id='0xc52b'/>
-      </source>
-      <address type='usb' bus='0' port='6'/>
-    </hostdev>
+    <audio id='1' type='spice'/>
+    <video>
+      <model type='virtio' heads='1' primary='yes'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x01' function='0x0'/>
+    </video>
     <redirdev bus='usb' type='spicevmc'>
-      <address type='usb' bus='0' port='4'/>
+      <address type='usb' bus='0' port='2'/>
     </redirdev>
     <redirdev bus='usb' type='spicevmc'>
-      <address type='usb' bus='0' port='5'/>
+      <address type='usb' bus='0' port='3'/>
     </redirdev>
     <memballoon model='virtio'>
       <address type='pci' domain='0x0000' bus='0x05' slot='0x00' function='0x0'/>
     </memballoon>
+    <rng model='virtio'>
+      <backend model='random'>/dev/urandom</backend>
+      <address type='pci' domain='0x0000' bus='0x06' slot='0x00' function='0x0'/>
+    </rng>
   </devices>
 </domain>
 

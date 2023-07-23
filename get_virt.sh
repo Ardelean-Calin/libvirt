@@ -2,6 +2,19 @@
 # Exit in case of error.
 set -e
 
+prompt_yn() {
+  echo -e "$(tput setaf 0)$1$(tput sgr0)"
+	read -r -p "Are you sure? [y/N] " response
+	case "$response" in
+	[yY][eE][sS] | [yY])
+		return 0
+		;;
+	*)
+		return 1
+		;;
+	esac
+}
+
 if [ "$(id -u)" != "0" ]; then
 	echo "This script must be run as root." 1>&2
 	exit 1
@@ -84,6 +97,20 @@ fi
 
 echo "Defining Windows 11 virtual machine."
 virsh define ./win11.xml
+
+echo -e "Would you like to get the latest images? [Y/n]"
+read -r IMAGE_SYNC
+case "$IMAGE_SYNC" in
+[Yy])
+	echo 1
+	;;
+[Nn])
+	echo 2 or 3
+	;;
+*)
+	echo default
+	;;
+esac
 
 echo "Done! A system restart is required.
 Also please make sure your Windows 11 image is placed at the following path:
