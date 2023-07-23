@@ -1,0 +1,8 @@
+[Unit]
+Description="Checks if virtual machines need to be backed up."
+
+[Path]
+PathChanged=%h/.libvirt/images
+
+[Install]
+WantedBy=default.target

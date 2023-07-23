@@ -1,0 +1,8 @@
+[Unit]
+Description="Backs up all virtual machines."
+
+[Service]
+Type=notify
+ExecStart=%h/.libvirt/scripts/backup.sh
+Restart=on-failure
+RestartSec=60s

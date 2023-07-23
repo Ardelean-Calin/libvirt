@@ -2,9 +2,11 @@
 # Exit in case of error.
 set -e
 
+trap "exit" INT # Exit in case of CTRL+C
+
 prompt_yn() {
-  echo -e "$(tput setaf 0)$1$(tput sgr0)"
-	read -r -p "Are you sure? [y/N] " response
+  echo -e "$(tput setaf 1)$1$(tput sgr0)"
+	read -r response
 	case "$response" in
 	[yY][eE][sS] | [yY])
 		return 0
@@ -95,22 +97,20 @@ if [ ! -f "/etc/libvirt/hooks/qemu.d/win11/release/end/stop.sh" ]; then
 	chmod +x /etc/libvirt/hooks/qemu.d/win11/release/end/stop.sh
 fi
 
+echo "Getting the latest images..."
+mkdir -p "$HOME"/.libvirt/images/
+rsync -ravhp dietpi@10.134.6.112:/mnt/hdd/data/VMs/ "$HOME"/.libvirt/images
+
 echo "Defining Windows 11 virtual machine."
 virsh define ./win11.xml
+echo "Defining Arch virtual machine."
+virsh define ./arch.xml
 
-echo -e "Would you like to get the latest images? [Y/n]"
-read -r IMAGE_SYNC
-case "$IMAGE_SYNC" in
-[Yy])
-	echo 1
-	;;
-[Nn])
-	echo 2 or 3
-	;;
-*)
-	echo default
-	;;
-esac
+# It's better to have the service files in here rather then my dotfiles
+# This way, if I introduce a change I don't have to edit in two places
+echo "Enabling image backup service."
+mv ./services/* "$HOME"/.config/systemd/user/
+systemctl enable --user backup.path
 
 echo "Done! A system restart is required.
 Also please make sure your Windows 11 image is placed at the following path:
