@@ -2,7 +2,7 @@
 Description="Backs up all virtual machines."
 
 [Service]
-Type=notify
+ExecCondition=%h/.libvirt/scripts/check-virt-running.sh
 ExecStart=%h/.libvirt/scripts/backup.sh
 Restart=on-failure
 RestartSec=60s

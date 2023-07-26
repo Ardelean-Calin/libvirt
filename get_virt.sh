@@ -110,8 +110,8 @@ virsh define ./arch.xml
 # This way, if I introduce a change I don't have to edit in two places
 echo "Enabling image backup service."
 mv ./services/* "$HOME"/.config/systemd/user/
-systemctl enable --user backup.path
+systemctl enable --user backup.timer
 
-echo "Done! A system restart is required.
-Also please make sure your Windows 11 image is placed at the following path:
-  $(tput bold)${HOME}/.libvirt/images/win11.qcow2$(tput sgr0)"
+echo "Done! A system restart is required."
+echo "Also please make sure your Windows 11 image is placed at the following path:"
+echo "  $(tput bold)${HOME}/.libvirt/images/win11.qcow2$(tput sgr0)"
